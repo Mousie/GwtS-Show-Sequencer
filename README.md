@@ -20,11 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --
 
 This script will calculate a full 9x command and IR timings given the raw commands if given no command line arguments.
-For example:
-Enter a 9X command: 24 64 6C <-- Raw 9x command
-92 24 64 6C 4B <-- Length code and CRC generated.
-{834, 417, 834, 417, 834, 834, 1251, 417, 834, 417, 834, 417, 1251, 417, 834, 834, <-- Generated IR timings
-417, 417, 1251, 834, 417, 834, 417, 417, 417, 834, 417, 417, 834, 417, 417, 417} <-- Continuation of above line
+
+For example:</br>
+Enter a 9X command: 24 64 6C # Raw 9x command</br>
+92 24 64 6C 4B # Length code and CRC generated.</br>
+{834, 417, 834, 417, 834, 834, 1251, 417, 834, 417, 834, 417, 1251, 417, 834, 834, # Generated IR timings</br>
+417, 417, 1251, 834, 417, 834, 417, 417, 417, 834, 417, 417, 834, 417, 417, 417} # Continuation of above line</br>
 
 Additionally, if given command line arguments, this script will generate a set of show commands with proper offsets
 compatible with Jon Fether's Mouse Ear Recording Playback Tool.
