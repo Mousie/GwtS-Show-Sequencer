@@ -1,7 +1,6 @@
 """
 GwtS show sequencer and command calculator
 
-MousieMagic.tumblr.com
 MousieMagic@gmail.com
 
 
@@ -20,18 +19,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 --
 
-This script will calculate a full 9x command given the raw commands.
+This script will calculate a full 9x command and IR timings given the raw commands if given no command line arguments.
+For example:
+Enter a 9X command: 24 64 6C <-- Raw 9x command
+92 24 64 6C 4B <-- Length code and CRC generated.
+{834, 417, 834, 417, 834, 834, 1251, 417, 834, 417, 834, 417, 1251, 417, 834, 834, <-- Generated IR timings
+417, 417, 1251, 834, 417, 834, 417, 417, 417, 834, 417, 417, 834, 417, 417, 417} <-- Continuation of above line
 
 Additionally, if given command line arguments, this script will generate a set of show commands with proper offsets
 compatible with Jon Fether's Mouse Ear Recording Playback Tool.
+
 The first argument is the input filename.
 The second argument is optional and is the output filename. If no name is given, a default of "output.txt" will be used.
-e.g. python GwtSDemo input_file_name.txt output_file_name.txt
+e.g. python GwtSDemo.py input.txt output.txt
 
+Input should be formatted with the first number being the timing in milliseconds, and the following numbers being
+commands, in hex, without delays or check sums.
+
+For example:
+12500 24 62 6A where 12500 represents playing the command at 12.5 seconds from the beginning that will send a command to
+clear all current colors/effects and sets both ears to green.
+
+The output will 000029CC: 93 FF 24 62 6A C8 with the first number, in hex, the time that the command is sent, followed
+by a : and then followed by the command with the appropriate delay code and checksum. Following that first output, the
+following lines will also be generated for the delays of FE, FD, .. F1, 20 and their appropriate time codes and
+delays. Refer to the example input.txt and output.txt for an example.
+
+By default, generated commands with the same time will be appended, one being sent right after the other.
+To change this, comment out line 84 and uncomment line 85 to instead have the "newer" command replace an older command.
 """
 
 import GwtSUtils
 import sys
+
 
 # Regular command calculator
 def main():
@@ -47,37 +67,33 @@ def main():
         except ValueError:
             print("Bad input")
 
+
 # Show Sequencer
 if len(sys.argv) > 1:
-    input_commands, output_commands = list(), list()
+    input_commands = list()
+    command_dict = dict()
+    # Open, format, and put file contents into input_commands
     with open(sys.argv[1], 'r') as input_file:
         for line in input_file:
             input_commands.append(line.replace(':', '').split())
+    # Process input_commands and add to dictionary to resolve timing conflicts.
     for line in input_commands:
-        for index, delay in enumerate(GwtSUtils.delays):  # Delays from FF to 20
-            if (int(line[0])-(16-index)*100) < 0:  # If the modified time goes before 0 (start of show) omit it.
-                continue
-            output_line = (str(int(line[0])-(16-index)*100)).zfill(8) + " "  # Begin with the time code in milliseconds
-            temp_command = line[1:]  # Extract the actual command from the line and omit the time
-            temp_command.insert(0, delay)  # Prepend the delay code to the command e.g. F2
-            temp_command = [int(value, 16) for value in temp_command]  # Convert from hex to decimal
-            temp_command = GwtSUtils.encode9x(temp_command)  # Encode for 9x using length code and CRC
-            output_line += (' '.join([hex(value).upper()[2:].zfill(2) for value in temp_command]))  # Convert back from decimal to hex and append to time code.
-            output_commands.append(output_line)  # Append time code + command to output command list.
-    # Sort list of commands and removes commands with overlapping times.
-    # Earlier commands are overwritten with "newer" commands.
-    command_dict = dict()
-    for line in sorted(output_commands):
-        command_dict[line[:8]] = line[8:]
+        times = (GwtSUtils.generate_delays(line))
+        for key, content in times.items():
+            if key in command_dict.keys():
+                command_dict[key].extend(content)  # Commands with same timing played right after each other
+#               command_dict[key] = content  # Newer commands overwrite older commands.
+            else:
+                command_dict[key] = content
     # Write to file
     try:
         output = open(sys.argv[2], 'w')
-    except IndexError:
+    except IndexError:  # Use default filename if no output filename supplied
         output = open("output.txt", 'w')
     for key, content in sorted(command_dict.items()):
-        output.write(hex(int(key))[2:].upper().zfill(8) + ':' + content + '\n')
+        output.write(key + ": " + " ".join(content) + "\n")
     output.close()
+    sys.exit()
 
-
-if __name__ == "__main__" and len(sys.argv) == 1:
+if __name__ == "__main__":
     main()

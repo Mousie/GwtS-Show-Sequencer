@@ -1,9 +1,7 @@
 """
-GwtS Utilities for calculating 9X command codes and IR timings.
+GwtS Utilities for calculating 9X command codes, IR timings, and sequencing of commands.
 
-MousieMagic.tumblr.com
 MousieMagic@gmail.com
-
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-crc_9x_lookup_table = [
+crc_9x_lookup_table = (
     0, 94, 188, 226, 97, 63, 221, 131, 194, 156, 126, 32, 163, 253, 31, 65,
     157, 195, 33, 127, 252, 162, 64, 30, 95, 1, 227, 189, 62, 96, 130, 220,
     35, 125, 159, 193, 66, 28, 254, 160, 225, 191, 93, 3, 128, 222, 60, 98,
@@ -37,7 +35,7 @@ crc_9x_lookup_table = [
     87, 9, 235, 181, 54, 104, 138, 212, 149, 203, 41, 119, 244, 170, 72, 22,
     233, 183, 85, 11, 136, 214, 52, 106, 43, 117, 151, 201, 74, 20, 246, 168,
     116, 42, 200, 150, 21, 75, 169, 247, 182, 232, 10, 84, 215, 137, 107, 53
-]
+)
 
 
 delays = ("FF", "FE", "FD", "FC", "FB", "FA", "F9", "F8", "F7", "F6", "F5", "F4", "F3", "F2", "F1", "20")
@@ -45,8 +43,8 @@ delays = ("FF", "FE", "FD", "FC", "FB", "FA", "F9", "F8", "F7", "F6", "F5", "F4"
 
 def encode9x(values):
     """ Encodes a command with the appropriate 9X length code and CRC
-    :param values: int[] commands in decimal format OR str[] commands in hex format OR a single str of commands
-    :return: str[] Encoded command string in hex
+    :param values: int[] Commands in decimal format OR str[] commands in hex format OR a single str of commands in hex
+    :return: int[] 9x encoded commands in decimal format
     """
     if type(values) is str:
         values = values.split()  # Split user input into str[]
@@ -60,7 +58,7 @@ def encode9x(values):
 
 def crc_9x(values):
     """ Calculate CRC for 9X commands
-    :param values: int[] Commands with 9X length code written in decimal format.
+    :param values: int[] Commands, with accompanying 9x length code, written in decimal format.
     :return: int[] CRC value
     """
     crc = 0
@@ -109,3 +107,22 @@ def ir_fancy_format(values):
     :return: String of nicely formatted IR lengths.
     """
     return '{'+', '.join(str(value) for value in values)+'}'
+
+
+def generate_delays(command):
+    """ Generates timing and calculates delays of a command for a show.
+    :param command: str[] of time offset and commands
+    :return: dict() of using their timings as keys and the 9x encoded commands as content.
+    """
+    delay_dict = dict()
+    for index, delay in enumerate(delays):
+        # Calculate time advances
+        time = (int(command[0])-(16-index)*100)
+        if time < 0:  # If the time advance goes before 0 (start of show), omit it.
+                continue
+        # Put together delay code and command
+        command_list = [delay]
+        command_list.extend(command[1:])
+        # Add to dict the timing and encode the command for 9x with appropriate delays.
+        delay_dict[hex(time)[2:].upper().zfill(8)] = [hex(value)[2:].upper().zfill(2) for value in encode9x(command_list)]
+    return delay_dict
