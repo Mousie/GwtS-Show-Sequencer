@@ -4,20 +4,8 @@ GwtS show sequencer and command calculator
 MousieMagic@gmail.com
 
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
---
+This is a tool for working with Glow with the Show commands allowing for a sequence to be created from simple commands
+and timing data.
 
 This script will calculate a full 9x command and IR timings given the raw commands if given no command line arguments.
 
@@ -48,3 +36,18 @@ delays. Refer to the example input.txt and output.txt for an example.
 
 By default, generated commands with the same time will be appended, one being sent right after the other.
 To change this, comment out line 84 and uncomment line 85 to instead have the "newer" command replace an older command.
+
+--
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
