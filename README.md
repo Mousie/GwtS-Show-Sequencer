@@ -1,5 +1,4 @@
-# GwtSCalc
-GwtS show sequencer and command calculator
+# GwtS show sequencer and command calculator
 
 MousieMagic@gmail.com
 
